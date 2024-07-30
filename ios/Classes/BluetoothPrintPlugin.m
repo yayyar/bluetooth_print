@@ -236,30 +236,19 @@
             NSData *decodeData = [[NSData alloc] initWithBase64EncodedString:content options:0];
             UIImage *image = [UIImage imageWithData:decodeData];
 
-            CGFloat maxWidth = [width floatValue] / 2;
+            CGFloat maxWidth = 200;
 
+            // Calculate the target size while maintaining the original aspect ratio
             CGSize originalSize = image.size;
             CGFloat scaleFactor = maxWidth / originalSize.width;
-            CGSize scaledSize = CGSizeMake(originalSize.width * scaleFactor, originalSize.height * scaleFactor);
-
-            if (originalSize.height > originalSize.width) {
-                CGFloat yOffset = (originalSize.height - originalSize.width) / 2.0;
-                CGRect cropRect = CGRectMake(0, yOffset, originalSize.width, originalSize.width);
-                CGImageRef croppedImageRef = CGImageCreateWithImageInRect([image CGImage], cropRect);
-                UIImage *croppedImage = [UIImage imageWithCGImage:croppedImageRef];
-                CGSize croppedSize = croppedImage.size;
-                CGImageRelease(croppedImageRef);
-                image = croppedImage;
-
-                scaledSize = CGSizeMake(croppedSize.width * scaleFactor, croppedSize.height * scaleFactor);
-            }
+            CGSize targetSize = CGSizeMake(originalSize.width * scaleFactor, originalSize.height * scaleFactor);
 
             // Create a renderer with the calculated target size
-            UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:scaledSize];
+            UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize];
 
             // Render the image and get a new data representation
             NSData *renderedImageData = [renderer JPEGDataWithCompressionQuality:1 actions:^(UIGraphicsImageRendererContext * _Nonnull context) {
-                [image drawInRect:CGRectMake(0, 0, scaledSize.width, scaledSize.height)];
+                [image drawInRect:CGRectMake(0, 0, targetSize.width, targetSize.height)];
             }];
             UIImage *resizedImage = [UIImage imageWithData:renderedImageData];
             [command addOriginrastBitImage:resizedImage];
